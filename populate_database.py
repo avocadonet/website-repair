@@ -22,11 +22,11 @@ def populate_database():
     try:
         print("➕ Создание услуг...")
         services = [
-            Service(name="Демонтаж старых покрытий", unit="м²", price=250),
-            Service(name="Штукатурка стен", unit="м²", price=600),
-            Service(name="Шпатлевка стен", unit="м²", price=400),
-            Service(name="Покраска стен", unit="м²", price=450),
-            Service(name="Укладка керамической плитки", unit="м²", price=1200),
+            Service(name="Демонтаж старых покрытий", unit="кв м", price=250),
+            Service(name="Штукатурка стен", unit="кв м", price=600),
+            Service(name="Шпатлевка стен", unit="кв м", price=400),
+            Service(name="Покраска стен", unit="кв м", price=450),
+            Service(name="Укладка керамической плитки", unit="кв м", price=1200),
         ]
         
         db.add_all(services)
