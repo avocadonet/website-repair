@@ -14,21 +14,28 @@
       >
         <div class="card-image">
           <img 
-            :src="getImageUrl(work.image)" 
-            :alt="`Работа ${work.id}`" 
+            :src="getImageUrl(work.photo_url)" 
+            :alt="work.description || `Работа ${work.id}`" 
             @error="handleImageError"
           />
         </div>
 
         <div class="card-header">
-          <span class="area">{{ work.area }} м²</span>
+          <span class="area">{{ work.square }} м²</span>
           <span class="dot">•</span>
           <span class="price">{{ formatPrice(work.price) }}</span>
         </div>
 
-        <ul class="work-list">
-          <li v-for="task in work.work_items" :key="task.id">
-            {{ task.name }}
+        <div class="work-description" v-if="work.description">
+          {{ work.description }}
+        </div>
+
+        <ul class="work-list" v-if="work.services && work.services.length > 0">
+          <li v-for="(service, index) in work.services.slice(0, 5)" :key="service.id">
+            {{ service.quantity }} {{ service.unit }} {{ service.name }}
+          </li>
+          <li v-if="work.services.length > 5" class="more-items">
+            + еще {{ work.services.length - 5 }} услуг
           </li>
         </ul>
 
@@ -85,7 +92,17 @@ const fetchWorks = async () => {
 
     const data = await response.json();
     
-    works.value = data;
+    // Форматируем данные для отображения
+    works.value = data.map(work => ({
+      ...work,
+      // Если нет описания, создаем краткое из услуг
+      description: work.description || (work.services && work.services.length > 0 
+        ? `Работа включает ${work.services.length} услуг`
+        : 'Пример выполненной работы')
+    }));
+    
+    console.log('Загружены работы:', works.value);
+    
   } catch (err) {
     console.error('Ошибка при загрузке работ:', err);
     error.value = 'Не удалось загрузить данные';
@@ -95,14 +112,17 @@ const fetchWorks = async () => {
 };
 
 const formatPrice = (value) => {
-  if (!value) return '0р';
-  return new Intl.NumberFormat('ru-RU').format(value) + 'р';
+  if (!value) return '0 ₽';
+  return new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
 };
 
 const getImageUrl = (imagePath) => {
   if (!imagePath) return 'https://placehold.co/600x400/e0e0e0/555?text=Нет+фото';
   if (imagePath.startsWith('http')) return imagePath;
-  return `${API_BASE_URL}${imagePath}`;
+  // Если путь начинается с /static/, добавляем базовый URL
+  if (imagePath.startsWith('/static/')) return `${API_BASE_URL}${imagePath}`;
+  // Иначе считаем что это относительный путь
+  return `${API_BASE_URL}/static${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
 };
 
 const handleImageError = (e) => {
@@ -115,7 +135,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
+  
 .status-message {
   text-align: center;
   font-size: 18px;
@@ -147,7 +167,7 @@ onMounted(() => {
 
 .works-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 30px;
 }
 
@@ -155,11 +175,16 @@ onMounted(() => {
   background: white;
   border: 1px solid #eee;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding-bottom: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.work-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
 }
 
 .card-image img {
@@ -175,6 +200,8 @@ onMounted(() => {
   justify-content: center;
   font-weight: 700;
   font-size: 18px;
+  background: #f9f9f9;
+  border-bottom: 1px solid #eee;
 }
 
 .dot {
@@ -184,38 +211,61 @@ onMounted(() => {
   line-height: 0;
 }
 
+.work-description {
+  padding: 15px 20px;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.4;
+  border-bottom: 1px solid #f0f0f0;
+}
+
 .work-list {
   list-style: none;
-  padding: 0 20px;
-  margin: 0 0 20px 0;
+  padding: 15px 20px;
+  margin: 0;
   font-size: 14px;
   line-height: 1.6;
   color: #333;
   flex-grow: 1;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .work-list li {
   position: relative;
-  padding-left: 15px;
+  padding: 5px 0 5px 15px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.work-list li:last-child {
+  border-bottom: none;
 }
 
 .work-list li::before {
   content: "•";
   position: absolute;
   left: 0;
-  color: #000; 
+  color: #d15cfc;
+  font-weight: bold;
+}
+
+.work-list .more-items {
+  color: #666;
+  font-style: italic;
+  font-size: 13px;
 }
 
 .card-button {
-  margin: 0 20px;
+  margin: 20px;
   background-color: #E0C3FC;
   border: none;
   padding: 12px;
-  border-radius: 20px;
+  border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
   color: #000;
   transition: background 0.2s;
+  font-weight: 500;
 }
 
 .card-button:hover {
@@ -263,6 +313,10 @@ onMounted(() => {
 @media (max-width: 768px) {
   .works-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .work-card {
+    margin-bottom: 20px;
   }
 }
 </style>

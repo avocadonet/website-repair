@@ -6,11 +6,16 @@
     <div v-if="loading" class="status-message">Загрузка прайс-листа...</div>
     <div v-else-if="error" class="status-message error">Ошибка: {{ error }}</div>
 
-    <!-- Аккордеон (показываем только если есть категории) -->
+    <!-- Если нет услуг -->
+    <div v-else-if="categories.length === 0" class="status-message">
+      Услуги временно недоступны
+    </div>
+
+    <!-- Аккордеон с категориями -->
     <div v-else class="accordion">
       <div 
         v-for="(category, index) in categories" 
-        :key="index"
+        :key="category.id || index"
         class="accordion-item"
         :class="{ 'is-open': category.isOpen }"
       >
@@ -34,42 +39,52 @@
           <table class="price-table">
             <thead>
               <tr>
-                <th class="col-name">Название</th>
-                <th class="col-unit">Ед. изм</th>
-                <th class="col-price">Цена</th>
+                <th class="col-name">Название услуги</th>
+                <th class="col-unit">Ед. изм.</th>
+                <th class="col-price">Цена, ₽</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(item, i) in category.items" :key="item.id || i">
                 <td>{{ item.name }}</td>
                 <td>{{ item.unit }}</td>
-                <!-- Форматируем цену -->
                 <td>{{ formatPrice(item.price) }}</td>
               </tr>
             </tbody>
           </table>
+          <div class="category-stats" v-if="category.items.length > 0">
+            Всего услуг: {{ category.items.length }}
+          </div>
         </div>
       </div>
+    </div>
+
+    <!-- Общая статистика -->
+    <div v-if="!loading && !error && categories.length > 0" class="total-stats">
+      Всего категорий: {{ categories.length }} • Всего услуг: {{ totalServices }}
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 
-// Настройки API
-const API_BASE_URL = 'http://localhost:8000'; // Адрес вашего бэкенда
-const ENDPOINT_RATES = '/api/work-items'; // Эндпоинт для получения ВСЕХ работ
+const API_BASE_URL = 'http://localhost:8000';
+const ENDPOINT_SERVICES = '/api/services';
 
 const categories = ref([]);
 const loading = ref(true);
 const error = ref(null);
 
+// Вычисляемое свойство для общего количества услуг
+const totalServices = computed(() => {
+  return categories.value.reduce((total, category) => total + category.items.length, 0);
+});
+
 // Функция для форматирования цены
 const formatPrice = (value) => {
   if (value === null || value === undefined) return '-';
-  // Если с бэка приходит число, добавляем "р."
-  return `${value} р.`;
+  return new Intl.NumberFormat('ru-RU').format(value);
 };
 
 // Функция переключения аккордеона
@@ -77,41 +92,93 @@ const toggleCategory = (index) => {
   categories.value[index].isOpen = !categories.value[index].isOpen;
 };
 
+// Функция для определения категории по названию услуги
+const detectCategory = (serviceName) => {
+  const name = serviceName.toLowerCase();
+  
+  if (name.includes('сантех') || name.includes('ванн') || name.includes('унитаз') || 
+      name.includes('раковин') || name.includes('водопровод')) {
+    return 'Сантехнические работы';
+  } else if (name.includes('демонтаж')) {
+    return 'Демонтажные работы';
+  } else if (name.includes('электр') || name.includes('розетк') || name.includes('провод')) {
+    return 'Электромонтажные работы';
+  } else if (name.includes('штукатур') || name.includes('шпатлев') || name.includes('покраск') || 
+             name.includes('обои') || name.includes('плитк')) {
+    return 'Отделочные работы';
+  } else if (name.includes('потол') || name.includes('гипсокартон') || name.includes('натяжн')) {
+    return 'Потолочные работы';
+  } else if (name.includes('пол') || name.includes('ламинат') || name.includes('паркет')) {
+    return 'Напольные покрытия';
+  } else if (name.includes('двер') || name.includes('окон')) {
+    return 'Двери и окна';
+  } else if (name.includes('доставк') || name.includes('уборк') || name.includes('вывоз')) {
+    return 'Дополнительные услуги';
+  } else {
+    return 'Прочие работы';
+  }
+};
+
 // Основная функция загрузки и группировки данных
-const fetchRates = async () => {
+const fetchServices = async () => {
   try {
     loading.value = true;
-    const response = await fetch(`${API_BASE_URL}${ENDPOINT_RATES}`);
+    const response = await fetch(`${API_BASE_URL}${ENDPOINT_SERVICES}`);
     
-    if (!response.ok) throw new Error('Ошибка загрузки данных');
-    
-    // Получаем плоский список работ из БД
-    // Ожидаемый формат: [{id:1, name:'...', unit:'м2', price:100, type:'Сантехника'}, ...]
-    const flatList = await response.json();
+    if (!response.ok) {
+      throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
 
-    // ГРУППИРОВКА: Превращаем плоский список в структуру для аккордеона
+    const services = await response.json();
+    
+    // Группируем услуги по категориям
     const grouped = {};
-
-    flatList.forEach(item => {
-      const typeName = item.type || 'Прочие работы'; // Если тип не указан
+    
+    services.forEach(service => {
+      const categoryName = detectCategory(service.name);
       
-      if (!grouped[typeName]) {
-        grouped[typeName] = [];
+      if (!grouped[categoryName]) {
+        grouped[categoryName] = [];
       }
-      grouped[typeName].push(item);
+      
+      grouped[categoryName].push({
+        id: service.id,
+        name: service.name,
+        unit: service.unit,
+        price: service.price
+      });
     });
 
     // Преобразуем объект grouped в массив categories
-    // Object.keys(grouped) вернет ['Сантехника', 'Демонтаж', ...]
-    categories.value = Object.keys(grouped).map((title, index) => ({
-      title: title,
-      items: grouped[title],
-      // Открываем первую категорию по умолчанию (index === 0)
-      isOpen: index === 0 
-    }));
+    const categoryOrder = [
+      'Сантехнические работы',
+      'Электромонтажные работы', 
+      'Отделочные работы',
+      'Напольные покрытия',
+      'Потолочные работы',
+      'Двери и окна',
+      'Демонтажные работы',
+      'Дополнительные услуги',
+      'Прочие работы'
+    ];
+
+    categories.value = categoryOrder
+      .filter(title => grouped[title] && grouped[title].length > 0)
+      .map((title, index) => ({
+        id: index + 1,
+        title: title,
+        items: grouped[title],
+        isOpen: index === 0 // Открываем первую категорию
+      }));
+
+    console.log('Загружены услуги:', {
+      totalCategories: categories.value.length,
+      totalServices: totalServices.value,
+      categories: categories.value.map(c => ({ title: c.title, count: c.items.length }))
+    });
 
   } catch (err) {
-    console.error(err);
+    console.error('Ошибка при загрузке услуг:', err);
     error.value = 'Не удалось загрузить прайс-лист';
   } finally {
     loading.value = false;
@@ -119,7 +186,7 @@ const fetchRates = async () => {
 };
 
 onMounted(() => {
-  fetchRates();
+  fetchServices();
 });
 </script>
 
@@ -131,6 +198,7 @@ onMounted(() => {
   font-size: 18px;
   color: #666;
 }
+
 .status-message.error {
   color: #d32f2f;
 }
@@ -158,10 +226,15 @@ onMounted(() => {
 
 .accordion-item {
   background: white;
-  border-radius: 2px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   overflow: hidden;
-  border-left: 5px solid #E0C3FC; 
+  border-left: 4px solid #E0C3FC;
+  transition: box-shadow 0.2s;
+}
+
+.accordion-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
 .accordion-header {
@@ -175,20 +248,26 @@ onMounted(() => {
 }
 
 .accordion-header:hover {
-  background-color: #fafafa;
+  background-color: #f9f9f9;
 }
 
 .category-title {
   font-size: 18px;
-  font-weight: 400;
+  font-weight: 500;
+  color: #333;
 }
 
 .icon svg {
   display: block;
+  transition: transform 0.2s;
+}
+
+.accordion-item.is-open .icon svg {
+  transform: rotate(180deg);
 }
 
 .accordion-body {
-  padding: 0 30px 30px 30px;
+  padding: 0 30px 20px 30px;
   animation: slideDown 0.3s ease-out;
 }
 
@@ -197,38 +276,117 @@ onMounted(() => {
   border-collapse: collapse;
   background-color: #fff;
   font-size: 14px;
+  margin-bottom: 15px;
 }
 
 .price-table th {
   text-align: left;
-  background-color: #eee;
+  background-color: #f5f5f5;
   padding: 12px 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: #333;
+  border-bottom: 2px solid #e0e0e0;
 }
 
-/* Скругление углов заголовка таблицы */
-.price-table th:first-child { border-top-left-radius: 6px; }
-.price-table th:last-child { border-top-right-radius: 6px; }
+.price-table th:first-child { 
+  border-top-left-radius: 6px; 
+  padding-left: 20px;
+}
+
+.price-table th:last-child { 
+  border-top-right-radius: 6px; 
+  padding-right: 20px;
+}
 
 .price-table td {
   padding: 12px 15px;
-  border-bottom: 1px solid #e0e0e0;
-  color: #333;
+  border-bottom: 1px solid #eee;
+  color: #444;
 }
 
-.col-name { width: 70%; }
-.col-unit { width: 15%; }
-.col-price { width: 15%; }
+.price-table td:first-child {
+  padding-left: 20px;
+}
+
+.price-table td:last-child {
+  padding-right: 20px;
+  font-weight: 500;
+  color: #000;
+}
+
+.price-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.col-name { 
+  width: 65%; 
+  font-weight: 400;
+}
+
+.col-unit { 
+  width: 15%; 
+  text-align: center;
+  color: #666;
+}
+
+.col-price { 
+  width: 20%; 
+  text-align: right;
+  font-weight: 500;
+}
+
+.category-stats {
+  text-align: right;
+  font-size: 13px;
+  color: #666;
+  padding: 5px 0;
+  border-top: 1px dashed #eee;
+}
+
+.total-stats {
+  margin-top: 30px;
+  padding: 15px;
+  text-align: center;
+  background: #f9f9f9;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #666;
+  border: 1px solid #eee;
+}
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
 
-@media (max-width: 600px) {
-  .accordion-header { padding: 15px; }
-  .accordion-body { padding: 0 10px 20px 10px; overflow-x: auto; }
-  .price-table { min-width: 500px; }
+@media (max-width: 768px) {
+  .accordion-header { 
+    padding: 15px 20px; 
+  }
+  
+  .accordion-body { 
+    padding: 0 15px 15px 15px; 
+    overflow-x: auto; 
+  }
+  
+  .price-table { 
+    min-width: 500px; 
+    font-size: 13px;
+  }
+  
+  .col-name { width: 60%; }
+  .col-unit { width: 20%; }
+  .col-price { width: 20%; }
+  
+  .price-table th,
+  .price-table td {
+    padding: 10px 12px;
+  }
 }
 </style>
