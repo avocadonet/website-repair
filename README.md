@@ -64,7 +64,7 @@ curl http://localhost:8000/
 pip install -r requirements.txt
 
 # Запуск PostgreSQL
-docker-compose up -d postgres
+docker compose up -d postgres
 
 # Запуск FastAPI приложения
 python src/main.py
