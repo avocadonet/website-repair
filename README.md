@@ -26,7 +26,7 @@
 1. **Клонируйте репозиторий:**
    ```bash
    git clone https://github.com/avocadonet/website-repair.git
-   cd website-repair
+   cd website-repair/vue-project
    ```
 
 2. **Установите зависимости:**
