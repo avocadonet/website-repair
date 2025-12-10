@@ -3,27 +3,36 @@
     
     <h1 class="page-title">Наши работы</h1>
 
-    <div class="works-grid">
+    <div v-if="loading" class="status-message">Загрузка проектов...</div>
+    <div v-else-if="error" class="status-message error">Ошибка: {{ error }}</div>
+
+    <div v-else class="works-grid">
       <div 
         class="work-card" 
-        v-for="(work, index) in works" 
-        :key="index"
+        v-for="work in works" 
+        :key="work.id"
       >
         <div class="card-image">
-          <img :src="work.image" :alt="work.title" />
+          <img 
+            :src="getImageUrl(work.image)" 
+            :alt="`Работа ${work.id}`" 
+            @error="handleImageError"
+          />
         </div>
 
         <div class="card-header">
-          <span class="area">{{ work.area }}</span>
+          <span class="area">{{ work.area }} м²</span>
           <span class="dot">•</span>
-          <span class="price">{{ work.price }}</span>
+          <span class="price">{{ formatPrice(work.price) }}</span>
         </div>
 
         <ul class="work-list">
-          <li v-for="(task, i) in work.tasks" :key="i">{{ task }}</li>
+          <li v-for="task in work.work_items" :key="task.id">
+            {{ task.name }}
+          </li>
         </ul>
 
-        <button class="card-button" @click="$emit('open-modal')">
+        <button class="card-button" @click="$emit('open-modal', work.id)">
           Оставить заявку
         </button>
       </div>
@@ -38,7 +47,6 @@
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
           </svg>
         </div>
-
         <div class="review-author">{{ review.author }}</div>
         <div class="review-service">{{ review.service }}</div>
         <p class="review-text">{{ review.text }}</p>
@@ -49,76 +57,76 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
-const works = ref([
-  {
-    image: 'https://placehold.co/600x400/e0e0e0/555?text=Кухня+Фото', 
-    area: '33 м²',
-    price: '337 000р',
-    tasks: [
-      'Грунтовка стен',
-      'Шпаклевка стен',
-      'Покраска потолка',
-      'Оклейка стен обоями',
-      'Укладка ламината и плитки',
-      'Монтаж панелей в ванной',
-      'Установка сантехники',
-      'Установка розеток',
-      'Установка дверей',
-      'Уборка помещения'
-    ]
-  },
-  {
-    image: 'https://placehold.co/600x400/e0e0e0/555?text=Гостиная+Фото',
-    area: '45 м²',
-    price: '420 000р',
-    tasks: [
-      'Демонтаж старого пола',
-      'Выравнивание стен',
-      'Натяжной потолок',
-      'Укладка паркета',
-      'Замена проводки',
-      'Установка люстры',
-      'Вывоз мусора'
-    ]
-  },
-  {
-    image: 'https://placehold.co/600x400/e0e0e0/555?text=Ванная+Фото',
-    area: '12 м²',
-    price: '150 000р',
-    tasks: [
-      'Укладка плитки',
-      'Гидроизоляция',
-      'Установка ванной',
-      'Монтаж раковины',
-      'Подключение стиральной машины'
-    ]
-  },
-  {
-    image: 'https://placehold.co/600x400/e0e0e0/555?text=Спальня+Фото',
-    area: '20 м²',
-    price: '210 000р',
-    tasks: [
-      'Звукоизоляция стен',
-      'Поклейка флизелиновых обоев',
-      'Монтаж бра',
-      'Укладка ковролина',
-      'Сборка мебели'
-    ]
-  }
-]);
+const API_BASE_URL = 'http://localhost:8000';
+const ENDPOINT_WORKS = '/api/works';
+
+const works = ref([]);
+const loading = ref(true);
+const error = ref(null);
 
 const reviews = ref([
   {
     author: 'Олег',
     service: 'Установка ванны, установка унитаза',
-    text: 'Установили ванну и унитаз быстро и профессионально! Работа выполнена аккуратно, без лишнего мусора и повреждений. Подключение герметичное, всё проверено — никаких протечек. Очень доволен качеством и отношением к делу. Спасибо за оперативность и надёжность!'
+    text: 'Установили ванну и унитаз быстро и профессионально! Работа выполнена аккуратно.'
   },
 ]);
+
+const fetchWorks = async () => {
+  try {
+    loading.value = true;
+    const response = await fetch(`${API_BASE_URL}${ENDPOINT_WORKS}`);
+    
+    if (!response.ok) {
+      throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    works.value = data;
+  } catch (err) {
+    console.error('Ошибка при загрузке работ:', err);
+    error.value = 'Не удалось загрузить данные';
+  } finally {
+    loading.value = false;
+  }
+};
+
+const formatPrice = (value) => {
+  if (!value) return '0р';
+  return new Intl.NumberFormat('ru-RU').format(value) + 'р';
+};
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return 'https://placehold.co/600x400/e0e0e0/555?text=Нет+фото';
+  if (imagePath.startsWith('http')) return imagePath;
+  return `${API_BASE_URL}${imagePath}`;
+};
+
+const handleImageError = (e) => {
+  e.target.src = 'https://placehold.co/600x400/e0e0e0/555?text=Ошибка+фото';
+};
+
+onMounted(() => {
+  fetchWorks();
+});
 </script>
 
 <style scoped>
+
+.status-message {
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+  padding: 40px;
+}
+
+.status-message.error {
+  color: #d32f2f;
+}
+
 .portfolio-page {
   max-width: 1200px;
   margin: 0 auto;
@@ -214,7 +222,6 @@ const reviews = ref([
   background-color: #d1a4fc;
 }
 
-/* ОТЗЫВЫ */
 .reviews-list {
   display: flex;
   flex-direction: column;
@@ -226,7 +233,7 @@ const reviews = ref([
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  max-width: 800px; /* Чтобы текст не был слишком широким */
+  max-width: 800px;
 }
 
 .stars {

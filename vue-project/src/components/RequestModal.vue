@@ -52,16 +52,23 @@ const error = ref('')
 const success = ref(false)
 
 const formatPhone = (event) => {
-  let value = event.target.value.replace(/\D/g, '')
-  if (value.startsWith('7') || value.startsWith('8')) {
+  const rawInput = event.target.value
+  let value = rawInput.replace(/\D/g, '')
+
+  if (rawInput.startsWith('+7')) {
+    value = value.substring(1)
+  } 
+  else if (value.startsWith('8')) {
     value = value.substring(1)
   }
+  
   if (value.length > 0) {
     value = '+7 (' + value
     if (value.length > 7) value = value.substring(0, 7) + ') ' + value.substring(7)
     if (value.length > 12) value = value.substring(0, 12) + '-' + value.substring(12)
     if (value.length > 15) value = value.substring(0, 15) + '-' + value.substring(15)
   }
+  
   form.phone = value.substring(0, 18)
 }
 

@@ -2,7 +2,12 @@
   <div class="prices-container">
     <h1 class="page-title">Расценки</h1>
 
-    <div class="accordion">
+    <!-- Лоадер и Ошибки -->
+    <div v-if="loading" class="status-message">Загрузка прайс-листа...</div>
+    <div v-else-if="error" class="status-message error">Ошибка: {{ error }}</div>
+
+    <!-- Аккордеон (показываем только если есть категории) -->
+    <div v-else class="accordion">
       <div 
         v-for="(category, index) in categories" 
         :key="index"
@@ -13,9 +18,11 @@
           <span class="category-title">{{ category.title }}</span>
           
           <div class="icon">
+            <!-- Иконка минус (если открыто) -->
             <svg v-if="category.isOpen" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M5 12H19" stroke="black" stroke-width="3" stroke-linecap="round"/>
             </svg>
+            <!-- Иконка плюс (если закрыто) -->
             <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 5V19" stroke="black" stroke-width="3" stroke-linecap="round"/>
               <path d="M5 12H19" stroke="black" stroke-width="3" stroke-linecap="round"/>
@@ -33,10 +40,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(item, i) in category.items" :key="i">
+              <tr v-for="(item, i) in category.items" :key="item.id || i">
                 <td>{{ item.name }}</td>
                 <td>{{ item.unit }}</td>
-                <td>{{ item.price }}</td>
+                <!-- Форматируем цену -->
+                <td>{{ formatPrice(item.price) }}</td>
               </tr>
             </tbody>
           </table>
@@ -47,59 +55,87 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
-const categories = ref([
-  {
-    title: 'Демонтажные работы',
-    isOpen: true,
-    items: [
-      { name: 'Демонтаж перегородок из кирпича (1/2 кирпича)', unit: 'кв.м.', price: '488 р.' },
-      { name: 'Демонтаж перегородок из кирпича (1/2 кирпича)', unit: 'кв.м.', price: '488 р.' },
-      { name: 'Демонтаж перегородок из кирпича (1/2 кирпича)', unit: 'кв.м.', price: '488 р.' },
-      { name: 'Демонтаж перегородок из кирпича (1/2 кирпича)', unit: 'кв.м.', price: '488 р.' },
-    ]
-  },
-  {
-    title: 'Сантехнические работы',
-    isOpen: false,
-    items: [
-      { name: 'Установка смесителя', unit: 'шт.', price: '1500 р.' },
-      { name: 'Монтаж унитаза', unit: 'шт.', price: '2500 р.' },
-    ]
-  },
-  {
-    title: 'Электромонтажные работы',
-    isOpen: false,
-    items: [
-      { name: 'Установка розетки', unit: 'шт.', price: '350 р.' },
-      { name: 'Прокладка кабеля', unit: 'п.м.', price: '100 р.' },
-    ]
-  },
-  {
-    title: 'Отделочные работы',
-    isOpen: false,
-    items: [
-      { name: 'Поклейка обоев', unit: 'кв.м.', price: '200 р.' },
-      { name: 'Штукатурка стен', unit: 'кв.м.', price: '450 р.' },
-    ]
-  },
-  {
-    title: 'Потолочные работы',
-    isOpen: false,
-    items: [
-      { name: 'Монтаж натяжного потолка', unit: 'кв.м.', price: '600 р.' },
-    ]
-  }
-]);
+// Настройки API
+const API_BASE_URL = 'http://localhost:8000'; // Адрес вашего бэкенда
+const ENDPOINT_RATES = '/api/work-items'; // Эндпоинт для получения ВСЕХ работ
 
+const categories = ref([]);
+const loading = ref(true);
+const error = ref(null);
 
+// Функция для форматирования цены
+const formatPrice = (value) => {
+  if (value === null || value === undefined) return '-';
+  // Если с бэка приходит число, добавляем "р."
+  return `${value} р.`;
+};
+
+// Функция переключения аккордеона
 const toggleCategory = (index) => {
   categories.value[index].isOpen = !categories.value[index].isOpen;
 };
+
+// Основная функция загрузки и группировки данных
+const fetchRates = async () => {
+  try {
+    loading.value = true;
+    const response = await fetch(`${API_BASE_URL}${ENDPOINT_RATES}`);
+    
+    if (!response.ok) throw new Error('Ошибка загрузки данных');
+    
+    // Получаем плоский список работ из БД
+    // Ожидаемый формат: [{id:1, name:'...', unit:'м2', price:100, type:'Сантехника'}, ...]
+    const flatList = await response.json();
+
+    // ГРУППИРОВКА: Превращаем плоский список в структуру для аккордеона
+    const grouped = {};
+
+    flatList.forEach(item => {
+      const typeName = item.type || 'Прочие работы'; // Если тип не указан
+      
+      if (!grouped[typeName]) {
+        grouped[typeName] = [];
+      }
+      grouped[typeName].push(item);
+    });
+
+    // Преобразуем объект grouped в массив categories
+    // Object.keys(grouped) вернет ['Сантехника', 'Демонтаж', ...]
+    categories.value = Object.keys(grouped).map((title, index) => ({
+      title: title,
+      items: grouped[title],
+      // Открываем первую категорию по умолчанию (index === 0)
+      isOpen: index === 0 
+    }));
+
+  } catch (err) {
+    console.error(err);
+    error.value = 'Не удалось загрузить прайс-лист';
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchRates();
+});
 </script>
 
 <style scoped>
+/* Добавлены стили для состояния загрузки */
+.status-message {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #666;
+}
+.status-message.error {
+  color: #d32f2f;
+}
+
+/* Ваш существующий CSS */
 .prices-container {
   max-width: 1000px;
   margin: 0 auto;
