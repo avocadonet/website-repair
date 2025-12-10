@@ -48,10 +48,10 @@ cd website-repair
 #### Способ A: Через Docker Compose (рекомендуется)
 ```bash
 # Запуск всех сервисов (PostgreSQL + FastAPI)
-docker-compose up -d
+docker compose up -d
 
 # Заполнение базы тестовыми данными
-docker-compose exec backend python populate_database.py
+docker compose exec backend python populate_database.py
 
 # Проверка работы API
 curl http://localhost:8000/
