@@ -1,12 +1,9 @@
-<!-- Home.vue -->
 <template>
   <div class="home-content">
     
-    <!-- 1. Hero Section -->
     <section class="hero">
       <div class="hero-content">
         <h1 class="hero-title">Мастера на любые виды ремонта</h1>
-        <!-- Эта кнопка теперь будет вызывать событие, которое должен "слушать" родительский компонент -->
         <button class="cta-button" @click="$emit('open-modal')">Оставить заявку</button>
       </div>
       <div class="hero-image-container">
@@ -14,7 +11,6 @@
       </div>
     </section>
 
-    <!-- 2. About Section -->
     <section class="about">
       <h2 class="section-title">О нас</h2>
       <div class="features-grid">
@@ -39,7 +35,6 @@
       </div>
     </section>
 
-    <!-- 3. Location & Contacts Section -->
     <section class="location-section">
       <div class="map-wrapper">
         <img src="../assets/map.jpg" alt="Карта" class="map-image" />
@@ -84,14 +79,10 @@
 </template>
 
 <script setup>
-// Этому компоненту не нужна логика, он просто отображает контент
-// и генерирует событие open-modal при клике на кнопку.
 defineEmits(['open-modal']);
 </script>
 
 <style scoped>
-/* Все ваши стили остаются здесь */
-/* =========== ПРЕДЫДУЩИЕ СТИЛИ (HERO и ABOUT) =========== */
 .hero { display: flex; min-height: 400px; background-color: #fff; position: relative; overflow: hidden; }
 .hero-content { flex: 1; padding: 60px 20px 60px 60px; z-index: 2; background: linear-gradient(90deg, #fff 60%, transparent 100%); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; max-width: 50%; }
 .hero-title { font-size: 42px; font-weight: 400; margin-bottom: 30px; line-height: 1.1; color: #1a1a1a; }
@@ -123,7 +114,6 @@ defineEmits(['open-modal']);
 .text-group .label { font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 4px; }
 .text-group .value { font-size: 14px; color: #333; font-weight: 500; }
 .simple-footer { background-color: #f5f5f5; text-align: center; padding: 10px 0 20px 0; font-size: 12px; color: #777; }
-/* RESPONSIVE */
 @media (max-width: 768px) {
   .hero { flex-direction: column; }
   .hero-content { max-width: 100%; padding: 30px; }

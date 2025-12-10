@@ -1,19 +1,12 @@
-<!-- components/RequestModal.vue -->
 <template>
   <Transition name="fade">
-    <!-- 
-      Бэкдроп теперь генерирует событие 'close' при клике на себя.
-      Родительский компонент будет слушать это событие.
-    -->
     <div class="modal-backdrop" @click.self="$emit('close')">
       <div class="modal-window">
-        <!-- Кнопка закрытия также генерирует событие 'close' -->
         <button class="modal-close" @click="$emit('close')">×</button>
         
         <h3>Оставить заявку</h3>
         <p>Заполните форму, и мы перезвоним вам.</p>
         
-        <!-- Форма теперь вызывает локальный метод submitForm -->
         <form class="modal-form" @submit.prevent="submitForm">
           <input type="text" placeholder="Ваше имя" required />
           <input type="tel" placeholder="+7 (___) ___-__-__" required />
@@ -25,22 +18,15 @@
 </template>
 
 <script setup>
-// Определяем, какие события этот компонент может отправлять родителю
 const emit = defineEmits(['close']);
 
-// Логика отправки формы теперь находится внутри компонента
 const submitForm = () => {
   alert('Заявка отправлена!');
-  // После отправки, просим родителя закрыть окно
   emit('close');
 };
 </script>
 
 <style scoped>
-/* 
-  ВАЖНО: стили теперь 'scoped', чтобы они применялись только к этому 
-  компоненту и не влияли на остальные части приложения.
-*/
 .modal-backdrop {
   position: fixed;
   top: 0; left: 0;
@@ -94,7 +80,6 @@ const submitForm = () => {
   cursor: pointer;
 }
 
-/* Стили для анимации Transition */
 .fade-enter-active, 
 .fade-leave-active { 
   transition: opacity 0.3s; 
