@@ -26,8 +26,7 @@ def get_db():
 def create_tables():
     """Создание таблиц при старте приложения"""
     try:
-        # Импортируем модели здесь, чтобы избежать циклических импортов
-        from infrastructure.database.models import FeedbackModel
+        from infrastructure.database.models import RepairRequest, Service, Work
         Base.metadata.create_all(bind=engine)
         logger.info("All database tables created successfully")
     except Exception as e:

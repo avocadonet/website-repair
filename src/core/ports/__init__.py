@@ -1,4 +1,4 @@
 """Repository interfaces"""
-from core.ports.feedback_repo import IFeedbackRepository
+from core.ports.repair_request_repository import IRepairRequestRepository
 
-__all__ = ["IFeedbackRepository"]
+__all__ = ["IRepairRequestRepository"]

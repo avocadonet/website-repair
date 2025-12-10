@@ -1,4 +1,4 @@
 """Use cases"""
-from application.use_cases.feedback_crud import FeedbackCRUD
+from application.use_cases.repair_request_crud import RepairRequestCRUD
 
-__all__ = ["FeedbackCRUD"]
+__all__ = ["RepairRequestCRUD"]

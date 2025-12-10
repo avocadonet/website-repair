@@ -3,10 +3,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Простая конфигурация без классов
-POSTGRES_USER = os.getenv("POSTGRES_USER", "feedback_user")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "feedback_password")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "feedback_db")
+POSTGRES_USER = os.getenv("POSTGRES_USER", "repair_user")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "repair_password")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "repair_db")
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
 POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
 

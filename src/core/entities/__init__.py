@@ -1,4 +1,6 @@
 """Domain entities"""
-from core.entities.feedback import Feedback
+from core.entities.repair_request import RepairRequest
+from core.entities.service import Service
+from core.entities.work import Work
 
-__all__ = ["Feedback"]
+__all__ = ["RepairRequest", "Service", "Work"]

@@ -1,4 +1,4 @@
 """API endpoints"""
-from infrastructure.web.endpoints.feedback import router as feedback_router
+from infrastructure.web.endpoints.repair_request import router as repair_request_router
 
-__all__ = ["feedback_router"]
+__all__ = ["repair_request_router"]
