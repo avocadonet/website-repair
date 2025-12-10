@@ -3,43 +3,30 @@
     
     <h1 class="page-title">Наши работы</h1>
 
-    <div v-if="loading" class="status-message">Загрузка проектов...</div>
-    <div v-else-if="error" class="status-message error">Ошибка: {{ error }}</div>
-
-    <div v-else class="works-grid">
+    <div class="works-grid">
       <div 
         class="work-card" 
-        v-for="work in works" 
-        :key="work.id"
+        v-for="(work, index) in works" 
+        :key="index"
       >
         <div class="card-image">
-          <img 
-            :src="getImageUrl(work.photo_url)" 
-            :alt="work.description || `Работа ${work.id}`" 
-            @error="handleImageError"
-          />
+          <img :src="work.image" :alt="`Работа ${index + 1}`" />
         </div>
 
         <div class="card-header">
-          <span class="area">{{ work.square }} м²</span>
+          <span class="area">{{ work.area }}</span>
           <span class="dot">•</span>
-          <span class="price">{{ formatPrice(work.price) }}</span>
+          <span class="price">{{ work.price }}</span>
         </div>
 
-        <div class="work-description" v-if="work.description">
-          {{ work.description }}
-        </div>
+        <!-- Описание объекта (из Python description) -->
+        <div class="work-description">{{ work.description }}</div>
 
-        <ul class="work-list" v-if="work.services && work.services.length > 0">
-          <li v-for="(service, index) in work.services.slice(0, 5)" :key="service.id">
-            {{ service.quantity }} {{ service.unit }} {{ service.name }}
-          </li>
-          <li v-if="work.services.length > 5" class="more-items">
-            + еще {{ work.services.length - 5 }} услуг
-          </li>
+        <ul class="work-list">
+          <li v-for="(task, i) in work.tasks" :key="i">{{ task }}</li>
         </ul>
 
-        <button class="card-button" @click="$emit('open-modal', work.id)">
+        <button class="card-button" @click="$emit('open-modal')">
           Оставить заявку
         </button>
       </div>
@@ -54,6 +41,7 @@
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
           </svg>
         </div>
+
         <div class="review-author">{{ review.author }}</div>
         <div class="review-service">{{ review.service }}</div>
         <p class="review-text">{{ review.text }}</p>
@@ -64,89 +52,80 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+// 1. Убрали дубликат import { ref }
+import { ref } from 'vue';
 
-const API_BASE_URL = 'http://localhost:8000';
-const ENDPOINT_WORKS = '/api/works';
+// 2. Импортируем изображения
+import img1 from '@/assets/1.png';
+import img2 from '@/assets/2.png';
+import img3 from '@/assets/3.png';
+import img4 from '@/assets/4.png';
 
-const works = ref([]);
-const loading = ref(true);
-const error = ref(null);
+const works = ref([
+  {
+    image: img1,
+    area: '26 м²',
+    price: '310 000р',
+    description: 'Просторная кухня-гостиная в стиле лофт',
+    tasks: [
+      'Штукатурка стен',
+      'Укладка ламината',
+      'Декоративная покраска (под кирпич)',
+      'Монтаж потолочных светильников',
+      'Установка розеток'
+    ]
+  },
+  {
+    image: img2,
+    area: '18 м²',
+    price: '225 000р',
+    description: 'Гостиная в современном стиле с зонированием',
+    tasks: [
+      'Шпатлевка стен под покраску',
+      'Покраска стен',
+      'Монтаж натяжного потолка',
+      'Установка выключателей/бра',
+      'Укладка ламината'
+    ]
+  },
+  {
+    image: img3,
+    area: '15 м²',
+    price: '195 000р',
+    description: 'Уютная столовая с декоративной отделкой',
+    tasks: [
+      'Оклейка обоями с подбором рисунка',
+      'Укладка паркетной доски',
+      'Монтаж люстры',
+      'Установка розеток',
+      'Установка плинтусов'
+    ]
+  },
+  {
+    image: img4,
+    area: '10 м²',
+    price: '160 000р',
+    description: 'Кухня в скандинавском стиле',
+    tasks: [
+      'Укладка плитки (фартук)',
+      'Покраска стен (грифельная краска)',
+      'Укладка напольной плитки',
+      'Установка розеток для техники',
+      'Монтаж светильников'
+    ]
+  }
+]);
 
 const reviews = ref([
   {
     author: 'Олег',
     service: 'Установка ванны, установка унитаза',
-    text: 'Установили ванну и унитаз быстро и профессионально! Работа выполнена аккуратно.'
+    text: 'Установили ванну и унитаз быстро и профессионально! Работа выполнена аккуратно, без лишнего мусора и повреждений. Подключение герметичное, всё проверено — никаких протечек. Очень доволен качеством и отношением к делу. Спасибо за оперативность и надёжность!'
   },
 ]);
-
-const fetchWorks = async () => {
-  try {
-    loading.value = true;
-    const response = await fetch(`${API_BASE_URL}${ENDPOINT_WORKS}`);
-    
-    if (!response.ok) {
-      throw new Error(`Ошибка HTTP: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    // Форматируем данные для отображения
-    works.value = data.map(work => ({
-      ...work,
-      // Если нет описания, создаем краткое из услуг
-      description: work.description || (work.services && work.services.length > 0 
-        ? `Работа включает ${work.services.length} услуг`
-        : 'Пример выполненной работы')
-    }));
-    
-    console.log('Загружены работы:', works.value);
-    
-  } catch (err) {
-    console.error('Ошибка при загрузке работ:', err);
-    error.value = 'Не удалось загрузить данные';
-  } finally {
-    loading.value = false;
-  }
-};
-
-const formatPrice = (value) => {
-  if (!value) return '0 ₽';
-  return new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
-};
-
-const getImageUrl = (imagePath) => {
-  if (!imagePath) return 'https://placehold.co/600x400/e0e0e0/555?text=Нет+фото';
-  if (imagePath.startsWith('http')) return imagePath;
-  // Если путь начинается с /static/, добавляем базовый URL
-  if (imagePath.startsWith('/static/')) return `${API_BASE_URL}${imagePath}`;
-  // Иначе считаем что это относительный путь
-  return `${API_BASE_URL}/static${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
-};
-
-const handleImageError = (e) => {
-  e.target.src = 'https://placehold.co/600x400/e0e0e0/555?text=Ошибка+фото';
-};
-
-onMounted(() => {
-  fetchWorks();
-});
 </script>
 
 <style scoped>
-  
-.status-message {
-  text-align: center;
-  font-size: 18px;
-  color: #666;
-  padding: 40px;
-}
-
-.status-message.error {
-  color: #d32f2f;
-}
-
 .portfolio-page {
   max-width: 1200px;
   margin: 0 auto;
@@ -194,7 +173,7 @@ onMounted(() => {
 }
 
 .card-header {
-  padding: 15px 20px;
+  padding: 15px 20px 5px; /* Чуть уменьшил отступ снизу */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -204,8 +183,17 @@ onMounted(() => {
   border-bottom: 1px solid #eee;
 }
 
+/* Добавил стиль для описания, чтобы оно красиво смотрелось */
+.work-description {
+  text-align: center;
+  padding: 0 20px 10px;
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+}
+
 .dot {
-  color: #d15cfc;
+  color: #d15cfc; 
   margin: 0 10px;
   font-size: 24px;
   line-height: 0;
