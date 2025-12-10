@@ -14,7 +14,6 @@
            Расценки
         </a>
         <a href="#" @click.prevent="currentTab = 'TabPortfolio'">Портфолио</a>
-        <a href="#" @click.prevent="currentTab = 'TabMasters'">Мастера</a>
       </nav>
 
       <div class="contact">
