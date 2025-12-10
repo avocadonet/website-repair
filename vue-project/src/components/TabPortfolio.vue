@@ -1,7 +1,6 @@
 <template>
   <div class="portfolio-page">
     
-    <!-- СЕКЦИЯ: НАШИ РАБОТЫ -->
     <h1 class="page-title">Наши работы</h1>
 
     <div class="works-grid">
@@ -10,36 +9,30 @@
         v-for="(work, index) in works" 
         :key="index"
       >
-        <!-- Картинка -->
         <div class="card-image">
           <img :src="work.image" :alt="work.title" />
         </div>
 
-        <!-- Информация: Площадь и Цена -->
         <div class="card-header">
           <span class="area">{{ work.area }}</span>
           <span class="dot">•</span>
           <span class="price">{{ work.price }}</span>
         </div>
 
-        <!-- Список работ -->
         <ul class="work-list">
           <li v-for="(task, i) in work.tasks" :key="i">{{ task }}</li>
         </ul>
 
-        <!-- Кнопка -->
         <button class="card-button" @click="$emit('open-modal')">
           Оставить заявку
         </button>
       </div>
     </div>
 
-    <!-- СЕКЦИЯ: ОТЗЫВЫ -->
     <h2 class="section-title">Отзывы</h2>
 
     <div class="reviews-list">
       <div class="review-card" v-for="(review, index) in reviews" :key="index">
-        <!-- Звезды -->
         <div class="stars">
           <svg v-for="n in 5" :key="n" width="18" height="18" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
@@ -58,10 +51,8 @@
 <script setup>
 import { ref } from 'vue';
 
-// ДАННЫЕ ПОРТФОЛИО
 const works = ref([
   {
-    // Замените ссылку ниже на путь к вашей картинке
     image: 'https://placehold.co/600x400/e0e0e0/555?text=Кухня+Фото', 
     area: '33 м²',
     price: '337 000р',
@@ -118,14 +109,12 @@ const works = ref([
   }
 ]);
 
-// ДАННЫЕ ОТЗЫВОВ
 const reviews = ref([
   {
     author: 'Олег',
     service: 'Установка ванны, установка унитаза',
     text: 'Установили ванну и унитаз быстро и профессионально! Работа выполнена аккуратно, без лишнего мусора и повреждений. Подключение герметичное, всё проверено — никаких протечек. Очень доволен качеством и отношением к делу. Спасибо за оперативность и надёжность!'
   },
-  // Можно добавить еще отзывы сюда
 ]);
 </script>
 
@@ -145,13 +134,11 @@ const reviews = ref([
 }
 
 .section-title {
-  margin-top: 60px; /* Отступ между работами и отзывами */
+  margin-top: 60px;
 }
 
-/* СЕТКА РАБОТ */
 .works-grid {
   display: grid;
-  /* Адаптивная сетка: минимум 260px ширина карточки, иначе перенос */
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 30px;
 }
@@ -183,7 +170,7 @@ const reviews = ref([
 }
 
 .dot {
-  color: #d15cfc; /* Розовая точка как на макете */
+  color: #d15cfc;
   margin: 0 10px;
   font-size: 24px;
   line-height: 0;
@@ -196,10 +183,9 @@ const reviews = ref([
   font-size: 14px;
   line-height: 1.6;
   color: #333;
-  flex-grow: 1; /* Чтобы кнопка прижималась к низу */
+  flex-grow: 1;
 }
 
-/* Буллиты (точки) списка */
 .work-list li {
   position: relative;
   padding-left: 15px;
@@ -217,7 +203,7 @@ const reviews = ref([
   background-color: #E0C3FC;
   border: none;
   padding: 12px;
-  border-radius: 20px; /* Сильное скругление как на макете */
+  border-radius: 20px;
   font-size: 16px;
   cursor: pointer;
   color: #000;
@@ -267,10 +253,9 @@ const reviews = ref([
   color: #333;
 }
 
-/* АДАПТИВ */
 @media (max-width: 768px) {
   .works-grid {
-    grid-template-columns: 1fr; /* Одна колонка на мобилках */
+    grid-template-columns: 1fr;
   }
 }
 </style>

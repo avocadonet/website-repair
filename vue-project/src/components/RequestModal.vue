@@ -1,23 +1,36 @@
-<!-- components/RequestModal.vue -->
 <template>
   <Transition name="fade">
-    <!-- 
-      Бэкдроп теперь генерирует событие 'close' при клике на себя.
-      Родительский компонент будет слушать это событие.
-    -->
     <div class="modal-backdrop" @click.self="$emit('close')">
       <div class="modal-window">
-        <!-- Кнопка закрытия также генерирует событие 'close' -->
         <button class="modal-close" @click="$emit('close')">×</button>
         
         <h3>Оставить заявку</h3>
         <p>Заполните форму, и мы перезвоним вам.</p>
         
-        <!-- Форма теперь вызывает локальный метод submitForm -->
         <form class="modal-form" @submit.prevent="submitForm">
-          <input type="text" placeholder="Ваше имя" required />
-          <input type="tel" placeholder="+7 (___) ___-__-__" required />
-          <button type="submit">Отправить</button>
+          <input 
+            type="text" 
+            v-model="form.name"
+            placeholder="Ваше имя" 
+            required 
+          />
+          <input 
+            type="tel" 
+            v-model="form.phone"
+            placeholder="+7 (___) ___-__-__" 
+            required 
+            @input="formatPhone"
+          />
+          <button type="submit" :disabled="loading">
+            {{ loading ? 'Отправка...' : 'Отправить' }}
+          </button>
+          
+          <div v-if="error" class="error-message">
+            {{ error }}
+          </div>
+          <div v-if="success" class="success-message">
+            ✅ Заявка отправлена! Мы скоро вам перезвоним.
+          </div>
         </form>
       </div>
     </div>
@@ -25,22 +38,85 @@
 </template>
 
 <script setup>
-// Определяем, какие события этот компонент может отправлять родителю
-const emit = defineEmits(['close']);
+import { ref, reactive } from 'vue'
 
-// Логика отправки формы теперь находится внутри компонента
-const submitForm = () => {
-  alert('Заявка отправлена!');
-  // После отправки, просим родителя закрыть окно
-  emit('close');
-};
+const emit = defineEmits(['close'])
+
+const form = reactive({
+  name: '',
+  phone: ''
+})
+
+const loading = ref(false)
+const error = ref('')
+const success = ref(false)
+
+const formatPhone = (event) => {
+  let value = event.target.value.replace(/\D/g, '')
+  if (value.startsWith('7') || value.startsWith('8')) {
+    value = value.substring(1)
+  }
+  if (value.length > 0) {
+    value = '+7 (' + value
+    if (value.length > 7) value = value.substring(0, 7) + ') ' + value.substring(7)
+    if (value.length > 12) value = value.substring(0, 12) + '-' + value.substring(12)
+    if (value.length > 15) value = value.substring(0, 15) + '-' + value.substring(15)
+  }
+  form.phone = value.substring(0, 18)
+}
+
+const submitForm = async () => {
+  if (!form.name.trim() || !form.phone.trim()) {
+    error.value = 'Заполните все поля'
+    return
+  }
+
+  // Очищаем номер от форматирования
+  const cleanPhone = form.phone.replace(/\D/g, '')
+  if (cleanPhone.length < 10) {
+    error.value = 'Введите корректный номер телефона'
+    return
+  }
+
+  loading.value = true
+  error.value = ''
+
+  try {
+    const response = await fetch('http://localhost:8000/api/repair-requests/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: form.name,
+        phone_number: cleanPhone
+      })
+    })
+
+    if (response.ok) {
+      success.value = true
+      // Очищаем форму
+      form.name = ''
+      form.phone = ''
+      
+      // Закрываем модалку через 2 секунды
+      setTimeout(() => {
+        emit('close')
+      }, 2000)
+    } else {
+      const data = await response.json()
+      error.value = data.detail || 'Ошибка при отправке заявки'
+    }
+  } catch (err) {
+    error.value = 'Ошибка соединения с сервером'
+    console.error(err)
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <style scoped>
-/* 
-  ВАЖНО: стили теперь 'scoped', чтобы они применялись только к этому 
-  компоненту и не влияли на остальные части приложения.
-*/
 .modal-backdrop {
   position: fixed;
   top: 0; left: 0;
@@ -94,7 +170,23 @@ const submitForm = () => {
   cursor: pointer;
 }
 
-/* Стили для анимации Transition */
+.modal-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #ff4444;
+  font-size: 14px;
+  text-align: center;
+}
+
+.success-message {
+  color: #00C851;
+  font-size: 14px;
+  text-align: center;
+}
+
 .fade-enter-active, 
 .fade-leave-active { 
   transition: opacity 0.3s; 

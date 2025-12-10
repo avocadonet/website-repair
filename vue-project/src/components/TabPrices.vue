@@ -3,24 +3,19 @@
     <h1 class="page-title">Расценки</h1>
 
     <div class="accordion">
-      <!-- Цикл по категориям услуг -->
       <div 
         v-for="(category, index) in categories" 
         :key="index"
         class="accordion-item"
         :class="{ 'is-open': category.isOpen }"
       >
-        <!-- Заголовок аккордеона (кликабельный) -->
         <div class="accordion-header" @click="toggleCategory(index)">
           <span class="category-title">{{ category.title }}</span>
           
-          <!-- Иконка плюс/минус -->
           <div class="icon">
-            <!-- Минус (если открыто) -->
             <svg v-if="category.isOpen" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M5 12H19" stroke="black" stroke-width="3" stroke-linecap="round"/>
             </svg>
-            <!-- Плюс (если закрыто) -->
             <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 5V19" stroke="black" stroke-width="3" stroke-linecap="round"/>
               <path d="M5 12H19" stroke="black" stroke-width="3" stroke-linecap="round"/>
@@ -28,7 +23,6 @@
           </div>
         </div>
 
-        <!-- Тело аккордеона (Таблица) -->
         <div class="accordion-body" v-show="category.isOpen">
           <table class="price-table">
             <thead>
@@ -55,11 +49,10 @@
 <script setup>
 import { ref } from 'vue';
 
-// Данные для прайс-листа
 const categories = ref([
   {
     title: 'Демонтажные работы',
-    isOpen: true, // Первая вкладка открыта по умолчанию, как на макете
+    isOpen: true,
     items: [
       { name: 'Демонтаж перегородок из кирпича (1/2 кирпича)', unit: 'кв.м.', price: '488 р.' },
       { name: 'Демонтаж перегородок из кирпича (1/2 кирпича)', unit: 'кв.м.', price: '488 р.' },
@@ -100,7 +93,7 @@ const categories = ref([
   }
 ]);
 
-// Функция переключения (открыть/закрыть)
+
 const toggleCategory = (index) => {
   categories.value[index].isOpen = !categories.value[index].isOpen;
 };
@@ -108,7 +101,7 @@ const toggleCategory = (index) => {
 
 <style scoped>
 .prices-container {
-  max-width: 1000px; /* Чуть уже основного контейнера для читаемости */
+  max-width: 1000px;
   margin: 0 auto;
   padding: 40px 20px;
   font-family: 'Roboto', sans-serif;
@@ -124,15 +117,14 @@ const toggleCategory = (index) => {
 .accordion {
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Отступ между блоками */
+  gap: 15px;
 }
 
 .accordion-item {
   background: white;
-  border-radius: 2px; /* Небольшое скругление */
+  border-radius: 2px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   overflow: hidden;
-  /* Фиолетовая полоска слева */
   border-left: 5px solid #E0C3FC; 
 }
 
@@ -159,7 +151,6 @@ const toggleCategory = (index) => {
   display: block;
 }
 
-/* Стили таблицы */
 .accordion-body {
   padding: 0 30px 30px 30px;
   animation: slideDown 0.3s ease-out;
@@ -174,7 +165,7 @@ const toggleCategory = (index) => {
 
 .price-table th {
   text-align: left;
-  background-color: #eee; /* Серый фон заголовка таблицы */
+  background-color: #eee;
   padding: 12px 15px;
   font-weight: 500;
   color: #333;
@@ -190,21 +181,18 @@ const toggleCategory = (index) => {
   color: #333;
 }
 
-/* Ширина колонок */
 .col-name { width: 70%; }
 .col-unit { width: 15%; }
 .col-price { width: 15%; }
 
-/* Анимация раскрытия (простая) */
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Адаптив для мобильных */
 @media (max-width: 600px) {
   .accordion-header { padding: 15px; }
   .accordion-body { padding: 0 10px 20px 10px; overflow-x: auto; }
-  .price-table { min-width: 500px; /* Чтобы таблица скроллилась, а не плющилась */ }
+  .price-table { min-width: 500px; }
 }
 </style>
