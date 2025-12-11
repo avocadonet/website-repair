@@ -5,8 +5,8 @@
     <!-- HEADER -->
     <header class="header">
       <div class="logo" @click="currentTab = 'TabHome'" style="cursor: pointer">
-        <span>Шарашкина</span>
-        <span>контора</span>
+        <span>Главная</span>
+        <span>страница</span>
       </div>
       
       <nav class="nav-links">

@@ -119,7 +119,7 @@ defineEmits(['open-modal']);
 .pixel-man { 
   width: 100%; 
   height: 100%; 
-  background-image: url('@/assets/trim.jpeg');  
+  background-image: url('@/assets/4.png');  
   background-size: cover; 
   background-position: center; 
   background-repeat: no-repeat; 
