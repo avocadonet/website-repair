@@ -154,7 +154,7 @@ defineEmits(['open-modal']);
 
 .contacts-bar {
   background-color: #fff;
-  border-top: 4px solid #d15cfc;
+  /* border-top: 4px solid #111011; */
   padding: 40px 20px;
   display: flex;
   justify-content: center;
