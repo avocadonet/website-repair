@@ -36,13 +36,12 @@
     </section>
 
     <section class="location-section">
-      <div class="map-wrapper">
-        <img src="../assets/map.png" alt="Карта" class="map-image" />
-      </div>
-
+      <!-- Используем надежный вариант с iframe -->
+      <YandexMapEmbed />
+      
+      <!-- Контактная панель под картой -->
       <div class="contacts-bar">
         <div class="contacts-inner">
-          
           <div class="contact-column address-col">
             <div class="column-label">НАШ АДРЕС</div>
             <div class="column-value address-text">
@@ -52,6 +51,7 @@
           </div>
 
           <div class="divider"></div>
+          
           <div class="contact-column">
             <div class="icon-box purple">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M20.01 15.38C18.8 15.38 17.64 15.18 16.55 14.82C16.21 14.7 15.83 14.78 15.57 15.05L13.78 17.3C10.74 15.86 8.16 13.29 6.72 10.23L8.96 8.44C9.23 8.17 9.31 7.79 9.2 7.45C8.84 6.36 8.64 5.2 8.64 3.99C8.64 3.44 8.19 3 7.64 3H4.19C3.64 3 3 3.24 3 3.99C3 13.28 10.73 21 20.01 21C20.72 21 21 20.37 21 19.82V16.37C21 15.82 20.56 15.38 20.01 15.38Z"/></svg>
@@ -86,6 +86,9 @@
 </template>
 
 <script setup>
+import { defineEmits } from 'vue';
+import YandexMapEmbed from '@/components/YandexMapSimple.vue';
+
 defineEmits(['open-modal']);
 </script>
 
