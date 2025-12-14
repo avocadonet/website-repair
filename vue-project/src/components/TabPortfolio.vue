@@ -229,7 +229,7 @@ const reviews = ref([
   content: "•";
   position: absolute;
   left: 0;
-  color: #d15cfc;
+  color: #f9c74f;
   font-weight: bold;
 }
 
@@ -241,7 +241,7 @@ const reviews = ref([
 
 .card-button {
   margin: 20px;
-  background-color: #E0C3FC;
+  background-color: #f9c74f;
   border: none;
   padding: 12px;
   font-size: 16px;
@@ -252,7 +252,7 @@ const reviews = ref([
 }
 
 .card-button:hover {
-  background-color: #d1a4fc;
+  background-color: #ffbe0b;
 }
 
 .reviews-list {
