@@ -127,17 +127,16 @@ const reviews = ref([
 
 <style scoped>
 .portfolio-page {
-  max-width: 1200px;
+  max-width: 69rem;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 0 20px 40px;
   font-family: 'Roboto', sans-serif;
-  color: #1a1a1a;
 }
 
 .page-title, .section-title {
-  font-size: 32px;
-  font-weight: 400;
   margin-bottom: 30px;
+  font-weight: 300;
+  font-size: 36px;
 }
 
 .section-title {
@@ -154,7 +153,6 @@ const reviews = ref([
   background: white;
   border: 1px solid #eee;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  border-radius: 8px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -188,8 +186,6 @@ const reviews = ref([
   text-align: center;
   padding: 0 20px 10px;
   font-size: 13px;
-  color: #666;
-  font-style: italic;
 }
 
 .dot {
@@ -248,7 +244,6 @@ const reviews = ref([
   background-color: #E0C3FC;
   border: none;
   padding: 12px;
-  border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
   color: #000;
@@ -269,7 +264,6 @@ const reviews = ref([
 .review-card {
   background: #fff;
   padding: 30px;
-  border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   max-width: 800px;
 }

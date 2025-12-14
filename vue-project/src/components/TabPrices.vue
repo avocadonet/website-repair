@@ -41,7 +41,7 @@
               <tr>
                 <th class="col-name">Название услуги</th>
                 <th class="col-unit">Ед. изм.</th>
-                <th class="col-price">Цена, ₽</th>
+                <th class="col-price">Цена</th>
               </tr>
             </thead>
             <tbody>
@@ -205,17 +205,16 @@ onMounted(() => {
 
 /* Ваш существующий CSS */
 .prices-container {
-  max-width: 1000px;
+  max-width: 69rem;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 0 20px 40px ;
   font-family: 'Roboto', sans-serif;
 }
 
 .page-title {
-  font-size: 32px;
   margin-bottom: 30px;
-  font-weight: 400;
-  color: #000;
+  font-weight: 300;
+  font-size: 36px;
 }
 
 .accordion {

@@ -3,24 +3,25 @@
   <div class="app-wrapper">
     
     <!-- HEADER -->
-    <header class="header">
-      <div class="logo" @click="currentTab = 'TabHome'" style="cursor: pointer">
-        <span>Главная</span>
-        <span>страница</span>
-      </div>
-      
-      <nav class="nav-links">
-        <a href="#" @click.prevent="currentTab = 'TabPrices'" :class="{ active: currentTab === 'TabPrices' }">
-           Расценки
-        </a>
-        <a href="#" @click.prevent="currentTab = 'TabPortfolio'">Портфолио</a>
-      </nav>
+    <div class="header-wrapper">
+      <header class="header">
+        <div class="logo" @click="currentTab = 'TabHome'" style="cursor: pointer">
+          <span>Ремонт</span>
+          <span>Мастер</span>
+        </div>
+        
+        <nav class="nav-links">
+          <a href="#" @click.prevent="currentTab = 'TabPrices'" :class="{ active: currentTab === 'TabPrices' }">
+            Расценки
+          </a>
+          <a href="#" @click.prevent="currentTab = 'TabPortfolio'">Портфолио</a>
+        </nav>
 
-      <div class="contact">
-        <a href="tel:+78005353535" class="phone-link">+ 7 (800) 535 35-35</a>
-      </div>
-    </header>
-
+        <div class="contact">
+          <a href="tel:+78005353535" class="phone-link">+ 7 (800) 535 35-35</a>
+        </div>
+      </header>
+    </div>
     <!-- Основная область контента -->
     <main>
       <KeepAlive>
@@ -66,21 +67,27 @@ body {
   font-family: 'Roboto', sans-serif;
   background-color: #fff;
   color: #1a1a1a;
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
 .app-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
   min-height: 100vh;
+}
+
+.header-wrapper {
+  box-shadow: 0px 4px 6.3px 0px #00000014;
   position: relative;
+  background-color: #fff;
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
-  padding: 15px 20px;
+  padding: 0 50px;
+  height: 55px;
   background: #fff;
+  margin: 0 auto;
 }
 
 .logo {
@@ -94,6 +101,7 @@ body {
 .nav-links {
   display: flex;
   gap: 30px;
+  justify-content: center;
 }
 
 .nav-links a {
@@ -109,6 +117,8 @@ body {
 
 .contact {
   font-size: 16px;
+  justify-content: right;
+  display: flex;
 }
 
 .phone-link {
@@ -116,5 +126,25 @@ body {
   color: #000;
   border-bottom: 2px dotted #d15cfc;
   padding-bottom: 2px;
+}
+
+@media screen and (max-width: 855px) {
+  .header {
+    padding: 0 1rem;
+  }
+}
+
+@media screen and (max-width: 80rem) {
+  .header {
+    width: auto;
+    max-width: 51.5rem;
+  }
+}
+
+@media screen and (min-width: 80rem) {
+  .header {
+    width: auto;
+    max-width: 69rem;
+  }
 }
 </style>
