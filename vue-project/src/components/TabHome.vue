@@ -2,9 +2,11 @@
   <div class="home-content">
     <!-- Остальные секции остаются без изменений -->
     <section class="hero">
-      <div class="hero-content">
-        <h1 class="hero-title">Мастера на любые виды ремонта</h1>
-        <button class="cta-button" @click="$emit('open-modal')">Оставить заявку</button>
+      <div class="hero-wrapper">
+        <div class="hero-content">
+          <h1 class="hero-title">Мастера <br /> на любые виды ремонта</h1>
+          <button class="cta-button" @click="$emit('open-modal')">Оставить заявку</button>
+        </div>
       </div>
     </section>
 
@@ -123,7 +125,6 @@ section {
 }
 
 .hero { 
-  display: flex; 
   min-height: 350px;
   background-color: #fff; 
   align-items: center;
@@ -134,20 +135,30 @@ section {
   background-position: -45% 16%;
 }
 
+.hero-wrapper {
+  display: flex;
+  max-width: 51rem;
+  min-height: 350px;
+  margin: 0 auto;
+}
+
 .hero-content { 
-  width: 616px;
+  width: 480px;
+  height: fit-content;
   padding: 27px 30px;
-  gap: 68px;
+  gap: 30px;
   position: relative;
   top: 22px;
-  left: 26px;
   display: flex;
   flex-direction: column; 
   justify-content: center; 
-  background-color: #ffffff50;
-  border: 1px solid #FFFDFD;
+  background-color: rgb(247, 247, 247);
   backdrop-filter: blur(10px);
   box-sizing: border-box;
+}
+
+.hero-content .cta-button {
+  margin: 0;
 }
 
 .hero-title {
@@ -157,7 +168,7 @@ section {
 }
 
 .cta-button { 
-  background-color: #d1a4fc; 
+  background-color: #f9c74f; 
   border: none; 
   padding: 10px 30px; 
   font-size: 16px; 
@@ -170,7 +181,7 @@ section {
 }
 
 .cta-button:hover { 
-  background-color: #c144fc; 
+  background-color: #ffbe0b; 
 }
 
 .about, .portfolio-section {
@@ -346,6 +357,11 @@ section {
 @media screen and (min-width: 80rem) {
   .about, .portfolio-section {
     width: auto;
+    max-width: 69rem;
+  }
+
+
+  .hero-wrapper {
     max-width: 69rem;
   }
   

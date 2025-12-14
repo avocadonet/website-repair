@@ -112,7 +112,7 @@ body {
 }
 
 .nav-links a.active, .nav-links a:hover {
-  color: #d15cfc; 
+  color: #ffbe0b; 
 }
 
 .contact {
@@ -124,7 +124,7 @@ body {
 .phone-link {
   text-decoration: none;
   color: #000;
-  border-bottom: 2px dotted #d15cfc;
+  border-bottom: 2px dotted #f9c74f;
   padding-bottom: 2px;
 }
 
